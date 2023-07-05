@@ -1,12 +1,16 @@
 import { Server } from 'socket.io';
 import http from 'http';
 import { sockets } from './socket/config';
+import { app } from './app';
 
+// const { API_PORT } = ENVIROMENTS;
 const server = http.createServer();
 
-const httpServer = server.listen(3000);
+const httpServer = server.listen(8888);
 const io = new Server(httpServer, {
 	// path: 'socket'
+
+	transports: ['websocket'],
 	cors: {
 		origin: '*',
 		methods: ['GET', 'POST', 'PUT', ' DELETE', 'OPTIONS'],
@@ -14,6 +18,4 @@ const io = new Server(httpServer, {
 });
 
 sockets(io);
-// console.log('🚀 👍 ~ io:', io);
-
-console.log(`LOAD SERVER  --> ON: ${3000}`);
+console.log(`WEB SOCKET LISTENING ON PORT ==>> ${8888}`);

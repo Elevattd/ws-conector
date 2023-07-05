@@ -4,4 +4,7 @@ export const app = express();
 
 app.use(express.json());
 
-export default app;
+app.post('/', (req: Request, res: Response) => {
+	console.log('req', req.body);
+	// console.log('res', res);
+});

@@ -23,18 +23,21 @@ const findClientIdByPlacaId = (placaId: string) => {
 
 const clientsConnected: Array<any> = [];
 
-export const sockets = (client: any) => {
+export const sockets = (io: any) => {
+	console.log('🚀 👍 ~ sockets ~ io:', io);
 	// console.log('🚀 👍 ~ sockets ~ client:', client);
 	try {
-		client.use((socket: any, next: any) => {
-			console.log('PASO TRANQUILO NOMAS');
-			const refreshToken = socket.handshake.headers['refresh-token'];
-			const apiKey = socket.handshake.headers['x-api-key'];
-			return !refreshToken && !apiKey ? new Error('NO SE PUDO REY') : next();
-		});
+		// client.use((socket: any, next: any) => {
+		// 	console.log('PASO TRANQUILO NOMAS');
+		// 	const refreshToken = socket.handshake.headers['refresh-token'];
+		// 	const apiKey = socket.handshake.headers['x-api-key'];
+		// 	return !refreshToken && !apiKey ? new Error('NO SE PUDO REY') : next();
+		// });
 
-		client.on('connection', (socket: any) => {
-			clientsConnected.push(client);
+		io.on('connect', (socket: any) => {
+			// console.log("🚀 👍 ~ client.on ~ socket:", socket)
+			clientsConnected.push(io);
+			// console.log('🚀 👍 ~ client.on ~ clientsConnected:', clientsConnected);
 			console.log('SOCKET.IO --> CONNECTED:', socket.client.id);
 
 			// Manejar la desconexión del cliente
@@ -44,8 +47,10 @@ export const sockets = (client: any) => {
 
 			// Manejar los mensajes que recibe el servidor
 			socket.on('message-from-esp32', (data: any) => {
+				// const { type, data: messageData } = data;
+				console.log('🚀 👍 ~ socket.on ~ data:', data);
 				const clientId = findClientIdByPlacaId(data.placaId); // Buscar el ID del cliente asociado a la placa
-				client.to(clientId).emit('message-to-client', data); // Emitir la respuesta solo al cliente correspondiente
+				io.to(clientId).emit('message-to-client', data); // Emitir la respuesta solo al cliente correspondiente
 			});
 
 			// Manejar errores
