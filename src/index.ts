@@ -4,7 +4,7 @@ import { sockets } from './socket/config';
 import { app } from './app';
 
 // const { API_PORT } = ENVIROMENTS;
-const server = http.createServer();
+const server = http.createServer(app);
 
 const httpServer = server.listen(8888);
 const io = new Server(httpServer, {

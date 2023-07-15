@@ -1,3 +1,5 @@
+import { Server, Socket } from 'socket.io';
+
 const clients: any = {
 	client1: {
 		placa1: { type: 'humedad', sensor: 'esp32', relay: 'esp32' },
@@ -23,42 +25,31 @@ const findClientIdByPlacaId = (placaId: string) => {
 
 const clientsConnected: Array<any> = [];
 
-export const sockets = (io: any) => {
-	console.log('🚀 👍 ~ sockets ~ io:', io);
-	// console.log('🚀 👍 ~ sockets ~ client:', client);
-	try {
-		// client.use((socket: any, next: any) => {
-		// 	console.log('PASO TRANQUILO NOMAS');
-		// 	const refreshToken = socket.handshake.headers['refresh-token'];
-		// 	const apiKey = socket.handshake.headers['x-api-key'];
-		// 	return !refreshToken && !apiKey ? new Error('NO SE PUDO REY') : next();
-		// });
+export const sockets = (io: Server) => {
+	io.on('connection', (socket: Socket) => {
+		console.log('SOCKET.IO --> CONNECTED:', socket.id);
 
-		io.on('connect', (socket: any) => {
-			// console.log("🚀 👍 ~ client.on ~ socket:", socket)
-			clientsConnected.push(io);
-			// console.log('🚀 👍 ~ client.on ~ clientsConnected:', clientsConnected);
-			console.log('SOCKET.IO --> CONNECTED:', socket.client.id);
-
-			// Manejar la desconexión del cliente
-			socket.on('disconnect', () => {
-				console.log('SOCKET.IO --> DISCONNECTED:', socket.client.id);
-			});
-
-			// Manejar los mensajes que recibe el servidor
-			socket.on('message-from-esp32', (data: any) => {
-				// const { type, data: messageData } = data;
-				console.log('🚀 👍 ~ socket.on ~ data:', data);
-				const clientId = findClientIdByPlacaId(data.placaId); // Buscar el ID del cliente asociado a la placa
-				io.to(clientId).emit('message-to-client', data); // Emitir la respuesta solo al cliente correspondiente
-			});
-
-			// Manejar errores
-			socket.on('error', (error: any) => {
-				console.error('SOCKET.IO --> ERROR:', error);
-			});
+		// Manejar la desconexión del cliente
+		socket.on('disconnect', () => {
+			console.log('SOCKET.IO --> DISCONNECTED:', socket.id);
 		});
-	} catch (error) {
-		throw error;
-	}
+
+		// Manejar el evento "hum_temp"
+		socket.on('hum_temp', (data: any) => {
+			// Realiza cualquier lógica adicional que desees con los datos recibidos
+			socket.emit('hum_temp_client', JSON.parse(data));
+			// socket.
+			// console.log('Evento "hum_temp" recibido:', JSON.parse(data));
+		});
+
+		// Manejar el evento "event"
+		socket.on('event', (data: any) => {
+			console.log('Evento "event" recibido:', data);
+			// Realiza cualquier lógica adicional que desees con los datos recibidos
+		});
+
+		socket.on('error', (error: any) => {
+			console.error('SOCKET.IO --> ERROR:', error);
+		});
+	});
 };

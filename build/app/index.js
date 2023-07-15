@@ -7,12 +7,7 @@ exports.app = void 0;
 const express_1 = __importDefault(require("express"));
 exports.app = (0, express_1.default)();
 exports.app.use(express_1.default.json());
-const PORT = 3000;
-exports.app.get('/ping', (req, res) => {
-    console.log('SOME PINGED HERE!!');
-    res.send('pong');
+exports.app.post('/', (req, res) => {
+    console.log('req', req.body);
+    // console.log('res', res);
 });
-exports.app.listen(PORT, () => {
-    console.log(`WEB SOCKET CONECTOR ===> ON: ${PORT}`);
-});
-exports.default = exports.app;

@@ -22,22 +22,41 @@ const findClientIdByPlacaId = (placaId) => {
     }
     return null; // Si no se encuentra la placa, devolver null
 };
+const clientsConnected = [];
 const sockets = (io) => {
-    io.on('connection', (socket) => {
-        console.log('SOCKET.IO --> CONNECTED:', socket.client.id);
-        // Manejar la desconexión del cliente
-        socket.on('disconnect', () => {
-            console.log('SOCKET.IO --> DISCONNECTED:', socket.client.id);
+    console.log('🚀 👍 ~ sockets ~ io:', io);
+    // console.log('🚀 👍 ~ sockets ~ client:', client);
+    try {
+        // client.use((socket: any, next: any) => {
+        // 	console.log('PASO TRANQUILO NOMAS');
+        // 	const refreshToken = socket.handshake.headers['refresh-token'];
+        // 	const apiKey = socket.handshake.headers['x-api-key'];
+        // 	return !refreshToken && !apiKey ? new Error('NO SE PUDO REY') : next();
+        // });
+        io.on('connect', (socket) => {
+            // console.log("🚀 👍 ~ client.on ~ socket:", socket)
+            clientsConnected.push(io);
+            // console.log('🚀 👍 ~ client.on ~ clientsConnected:', clientsConnected);
+            console.log('SOCKET.IO --> CONNECTED:', socket.client.id);
+            // Manejar la desconexión del cliente
+            socket.on('disconnect', () => {
+                console.log('SOCKET.IO --> DISCONNECTED:', socket.client.id);
+            });
+            // Manejar los mensajes que recibe el servidor
+            socket.on('message-from-esp32', (data) => {
+                // const { type, data: messageData } = data;
+                console.log('🚀 👍 ~ socket.on ~ data:', data);
+                const clientId = findClientIdByPlacaId(data.placaId); // Buscar el ID del cliente asociado a la placa
+                io.to(clientId).emit('message-to-client', data); // Emitir la respuesta solo al cliente correspondiente
+            });
+            // Manejar errores
+            socket.on('error', (error) => {
+                console.error('SOCKET.IO --> ERROR:', error);
+            });
         });
-        // Manejar los mensajes que recibe el servidor
-        socket.on('message-from-esp32', (data) => {
-            const clientId = findClientIdByPlacaId(data.placaId); // Buscar el ID del cliente asociado a la placa
-            io.to(clientId).emit('message-to-client', data); // Emitir la respuesta solo al cliente correspondiente
-        });
-        // Manejar errores
-        socket.on('error', (error) => {
-            console.error('SOCKET.IO --> ERROR:', error);
-        });
-    });
+    }
+    catch (error) {
+        throw error;
+    }
 };
 exports.sockets = sockets;
